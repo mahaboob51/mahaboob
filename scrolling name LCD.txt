@@ -1,0 +1,34 @@
+#include <Arduino.h>
+#include <Wire.h>
+#include "rgb_lcd.h"
+#include <BluetoothSerial.h>
+
+rgb_lcd lcd;
+BluetoothSerial SerialBT;  // Create an instance of the BluetoothSerial class
+
+void setup() {
+  lcd.begin(16, 2);  // Initialize the LCD
+  Serial.begin(115200);
+  SerialBT.begin("ESP32 Grove LCD");  // Initialize Bluetooth with a name
+  lcd.print("ESP32 Grove LCD");
+  lcd.setCursor(0, 1);  // Set cursor to 2nd line
+  lcd.print("Waiting for data");
+}
+
+void loop() {
+  if (SerialBT.available()) {
+    String message = SerialBT.readStringUntil('\n');
+    lcd.clear();
+    lcd.setCursor(0, 1);  // Set cursor to 2nd line
+    lcd.print(message);
+    Serial.println("Received: " + message);
+
+    // Scroll message if it's longer than 16 characters
+    if (message.length() > 16) {
+      for (int i = 0; i < message.length() - 15; i++) {
+        delay(500); // Adjust the delay time to control scrolling speed
+        lcd.scrollDisplayLeft();
+      }
+    }
+  }
+}
